@@ -12,10 +12,14 @@
 <body>
 
 </body>
-    <div>WeddingShop:
-        <a href="/index">Home</a>
-        <a href="/list">Wedding List</a>
-        <a href="/login">Login</a>
+    <div>Wedding Shop:
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('list') }}">Wedding List</a>
+        {% if current_user.is_anonymous %}
+            <a href="{{ url_for('login') }}">Login</a>
+        {% else %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% endif %}
     </div>
     <hr>
     {% block content %}{% endblock %}
