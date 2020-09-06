@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect
 from app import app
 from app.forms import LoginForm
-import json
+from app.models import Product
 
 
 @app.route("/")
@@ -14,12 +14,8 @@ def index():
 @app.route("/list")
 def product_list():
     title = "Product List"
-    with open("products.json") as f:
-        prod = f.read()
-
-    products = json.loads(prod)
+    products = Product.query.all()
     return render_template("list.html", title=title, products=products)
-# TODO: store the added products using ajax maybe?
 
 
 @app.route("/login", methods=["GET", "POST"])

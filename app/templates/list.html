@@ -10,7 +10,7 @@
     <table>
         <thead>
             <tr class="center">
-                <th scope="col" width="5%">id</th>
+                <th scope="col">id</th>
                 <th scope="col">name</th>
                 <th scope="col">brand</th>
                 <th scope="col">price</th>
@@ -24,7 +24,7 @@
                     <td>{{ prod.id }}</td>
                     <td>{{ prod.name }}</td>
                     <td>{{ prod.brand }}</td>
-                    <td>{{ prod.price }}</td>
+                    <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
                     <td>{% if prod.in_stock_quantity %}{{ prod.in_stock_quantity }}{% else %}Sold Out{% endif %}</td>
                     <td>
                         {% if prod.in_stock_quantity %}
