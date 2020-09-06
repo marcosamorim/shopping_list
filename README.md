@@ -1,1 +1,1 @@
-# shopping_list
+# wedding_list
