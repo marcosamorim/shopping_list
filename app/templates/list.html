@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+<style>
+    center {text-align: center;}
+    td {text-align: center;}
+</style>
+
+{% block content %}
+    <h1>Product list</h1>
+    <table>
+        <thead>
+            <tr class="center">
+                <th scope="col" width="5%">id</th>
+                <th scope="col">name</th>
+                <th scope="col">brand</th>
+                <th scope="col">price</th>
+                <th scope="col">stock</th>
+                <th scope="col">actions</th>
+            </tr>
+        </thead>
+        {% for prod in products %}
+            <tbody>
+                <tr class="center">
+                    <td>{{ prod.id }}</td>
+                    <td>{{ prod.name }}</td>
+                    <td>{{ prod.brand }}</td>
+                    <td>{{ prod.price }}</td>
+                    <td>{% if prod.in_stock_quantity %}{{ prod.in_stock_quantity }}{% else %}Sold Out{% endif %}</td>
+                    <td>
+                        {% if prod.in_stock_quantity %}
+                            <a href="index.html">Add to list</a>
+                            /
+                        {% endif %}
+                        <a href="index.html">Remove from list</a>
+                    </td>
+                </tr>
+            </tbody>
+        {% endfor %}
+    </table>
+    <br><br>
+
+    <a href="list.html">Show list</a>
+    <a href="report.html">Generate Report</a>
+
+{% endblock %}
