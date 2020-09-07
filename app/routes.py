@@ -1,18 +1,15 @@
-# from flask import render_template, flash, redirect
 from flask import (
-    Flask,
     render_template,
     request,
     redirect,
     url_for,
     flash,
-    make_response,
 )
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
-from app import app
-from app.forms import LoginForm
+from app import app, db
+from app.forms import LoginForm, RegistrationForm
 from app.models import Product, User
 
 
@@ -37,7 +34,7 @@ def login():
         if user is None or not user.check_password(form.password.data):
             flash("Invalid username or password")
             return redirect(url_for("login"))
-        login_user(user, remember=form.remember_me.data)
+        login_user(user)
 
         # if no next argument is specified, redirect to index
         next_page = request.args.get("next")
@@ -48,16 +45,32 @@ def login():
     return render_template("login.html", title="Sign In", form=form)
 
 
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("Congratulations, you are now a registered user!")
+        return redirect(url_for("login"))
+    return render_template("register.html", title="Register", form=form)
 
 
 # Product related routes
 # ------------------------------------
-@login_required
 @app.route("/list")
+@login_required
 def product_list():
     title = "Product List"
     cookied_list = request.cookies.get("products")
@@ -72,7 +85,20 @@ def product_list():
     )
 
 
-@login_required
 @app.route("/gift")
+@login_required
 def gift_list():
     pass
+
+
+# Error handling
+# -----------------------------
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template("500.html"), 500
