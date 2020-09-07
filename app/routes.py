@@ -73,9 +73,12 @@ def register():
 @login_required
 def product_list():
     title = "Product List"
-    cookied_list = request.cookies.get("products")
-    if cookied_list:
-        products_on_list = Product.query.filter(id__in=cookied_list.split(","))
+    # check if the user already have any product selected
+    user_gift_list_ids = [p.id for p in current_user.products]
+    if user_gift_list_ids:
+        products_on_list = [
+            p.id for p in Product.query.filter(Product.id.in_(user_gift_list_ids)).all()
+        ]
     else:
         products_on_list = []
 
@@ -85,6 +88,33 @@ def product_list():
     )
 
 
+@app.route("/add_product", methods=["GET", "POST"])
+@login_required
+def add_product_to_user_gift_list():
+    # we only need the first (and only) key value from this form
+    prod_id = request.form.keys().__next__()
+    prod = Product.query.filter_by(id=prod_id).first()
+    current_user.products.append(prod)
+    prod.in_stock_quantity -= 1
+    db.session.commit()
+    return redirect(url_for("product_list"))
+
+
+@app.route("/remove_product", methods=["GET", "POST"])
+@login_required
+def remove_product_to_user_gift_list():
+    # we only need the first (and only) key value from this form
+    prod_id = request.form.keys().__next__()
+    prod = Product.query.filter_by(id=prod_id).first()
+    print("current_user.products")
+    print(current_user.products)
+    current_user.products.remove(prod)
+    prod.in_stock_quantity += 1
+    db.session.commit()
+    return redirect(url_for("product_list"))
+
+
+# TODO: show user's gift list
 @app.route("/gift")
 @login_required
 def gift_list():

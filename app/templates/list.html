@@ -27,11 +27,16 @@
                     <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
                     <td>{% if prod.in_stock_quantity %}{{ prod.in_stock_quantity }}{% else %}Sold Out{% endif %}</td>
                     <td>
-                        {% if prod.in_stock_quantity %}
-                            <a href="index.html">Add to list</a>
-                            /
+                        {% if prod.id not in products_on_list and prod.in_stock_quantity %}
+                            <form action="/add_product" method="POST">
+                                <input type="submit" name="{{ prod.id }}" value="Add to List"/>
+                            </form>
                         {% endif %}
-                        <a href="index.html">Remove from list</a>
+                        {% if prod.id in products_on_list %}
+                        <form action="/remove_product" method="POST">
+                            <input type="submit" name="{{ prod.id }}" value="Remove from List"/>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
             </tbody>
