@@ -1,24 +1,24 @@
-"""empty message
+"""seed products table
 
-Revision ID: 93bbcf5ac9da
-Revises: b30ce1171494
-Create Date: 2020-09-06 12:39:38.443200
+Revision ID: 757c8bfa3285
+Revises: c748381e07c2
+Create Date: 2020-09-07 17:14:44.305594
 
 """
 from sqlalchemy.sql import table, column
 from sqlalchemy import String, Integer, Float
 from alembic import op
 
+
 # revision identifiers, used by Alembic.
-revision = "93bbcf5ac9da"
-down_revision = "b30ce1171494"
+revision = "757c8bfa3285"
+down_revision = "c748381e07c2"
 branch_labels = None
 depends_on = None
 
-
 # Create an ad-hoc table to use for the insert statement.
 products_table = table(
-    "product",
+    "products",
     column("id", Integer),
     column("name", String),
     column("brand", String),
@@ -183,4 +183,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("product")
+    op.drop_table("products")
