@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+<style>
+    center {text-align: center;}
+    td {text-align: center;}
+</style>
+
+{% block content %}
+    <h1>Product list</h1>
+    <table>
+        <thead>
+            <tr class="center">
+                <th scope="col">Name</th>
+                <th scope="col">Brand</th>
+                <th scope="col">Price</th>
+                <th scope="col">Purchased?</th>
+            </tr>
+        </thead>
+        {% for prod in products %}
+            <tbody>
+                <tr class="center">
+                    <td>{{ prod.name }}</td>
+                    <td>{{ prod.brand }}</td>
+                    <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
+                    <td>{% if prod.id in purchased_products_ids %}Yes √{% else %}No X{% endif %}</td>
+                </tr>
+            </tbody>
+        {% endfor %}
+    </table>
+    <br><br>
+
+    <a href="{{ url_for('product_list') }}">Back to product list</a>
+
+{% endblock %}

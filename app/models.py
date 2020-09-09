@@ -1,5 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+
 from app import db, login
 
 
@@ -16,12 +17,24 @@ class Product(db.Model):
         return f"<Product {self.name} - {self.brand}>"
 
 
-giftlist_products = db.Table(
-    "gift_lists_products",
-    db.Column("user_id", db.Integer, db.ForeignKey("users.id"),),
-    db.Column("product_id", db.Integer, db.ForeignKey("products.id"),),
-    db.Column("purchased", db.Boolean, default=False),
-)
+class GiftList(db.Model):
+    __tablename__ = "giftlists"
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), primary_key=True, index=True
+    )
+    product_id = db.Column(
+        db.Integer, db.ForeignKey("products.id"), primary_key=True, index=True
+    )
+    purchased = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f"<GiftList {self.username()} - {self.product()}"
+
+    def username(self):
+        return User.query.filter_by(id=self.user_id).first().username
+
+    def product(self):
+        return Product.query.filter_by(id=self.product_id).first()
 
 
 @login.user_loader
@@ -35,11 +48,6 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    products = db.relationship(
-        "Product",
-        secondary=giftlist_products,
-        backref=db.backref("gifts", lazy="dynamic"),
-    )
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -49,3 +57,11 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def products(self):
+        user_prod_ids = [p.product_id for p in GiftList.query.filter_by(user_id=self.id).all()]
+        products = Product.query.filter(Product.id.in_(user_prod_ids)).all()
+        return products
+
+    def product_ids(self):
+        return [p.id for p in self.products()]

@@ -1,8 +1,8 @@
-"""seed products table
+"""seed products
 
-Revision ID: 757c8bfa3285
-Revises: c748381e07c2
-Create Date: 2020-09-07 17:14:44.305594
+Revision ID: 3132bb8ec2ea
+Revises: da8d0909826c
+Create Date: 2020-09-09 21:47:59.529720
 
 """
 from sqlalchemy.sql import table, column
@@ -11,10 +11,11 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "757c8bfa3285"
-down_revision = "c748381e07c2"
+revision = '3132bb8ec2ea'
+down_revision = 'da8d0909826c'
 branch_labels = None
 depends_on = None
+
 
 # Create an ad-hoc table to use for the insert statement.
 products_table = table(

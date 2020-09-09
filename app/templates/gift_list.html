@@ -13,7 +13,6 @@
                 <th scope="col">Name</th>
                 <th scope="col">Brand</th>
                 <th scope="col">Price</th>
-                <th scope="col">Stock</th>
                 <th scope="col">Actions</th>
             </tr>
         </thead>
@@ -23,17 +22,16 @@
                     <td>{{ prod.name }}</td>
                     <td>{{ prod.brand }}</td>
                     <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
-                    <td>{% if prod.in_stock_quantity %}{{ prod.in_stock_quantity }}{% else %}Sold Out{% endif %}</td>
                     <td>
-                        {% if prod.id not in products_on_list and prod.in_stock_quantity %}
-                            <form action="{{ url_for('add_product_to_user_gift_list') }}" method="POST">
-                                <input type="submit" name="{{ prod.id }}" value="Add to List"/>
+                        {% if prod.purchased %}
+                            <a>Product already purchased</a>
+                        {% else %}
+                            <form action="{{ url_for('remove_product_to_user_gift_list') }}" method="POST">
+                                <input type="submit" name="{{ prod.id }}" value="Remove from List"/>
                             </form>
-                        {% endif %}
-                        {% if prod.id in products_on_list %}
-                        <form action="{{ url_for('remove_product_to_user_gift_list') }}" method="POST">
-                            <input type="submit" name="{{ prod.id }}" value="Remove from List"/>
-                        </form>
+                            <form action="{{ url_for('purchase_product') }}" method="POST">
+                                <input type="submit" name="{{ prod.id }}" value="Purchase"/>
+                            </form>
                         {% endif %}
                     </td>
                 </tr>
@@ -42,6 +40,7 @@
     </table>
     <br><br>
 
-    <a href="{{ url_for('user_gift_list') }}">Show your gift list</a>
+    <a href="{{ url_for('product_list') }}">Back to product list</a>
+    <a href="{{ url_for('gift_report') }}">Generate Report</a>
 
 {% endblock %}

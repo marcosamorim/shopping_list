@@ -10,7 +10,7 @@ from werkzeug.urls import url_parse
 
 from app import app, db
 from app.forms import LoginForm, RegistrationForm
-from app.models import Product, User
+from app.models import Product, User, GiftList
 
 
 @app.route("/")
@@ -30,7 +30,9 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         # validate user login attempt
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(username=form.username.data).first_or_404(
+            description=f'User "{form.username.data}" not found.'
+        )
         if user is None or not user.check_password(form.password.data):
             flash("Invalid username or password")
             return redirect(url_for("login"))
@@ -74,7 +76,7 @@ def register():
 def product_list():
     title = "Product List"
     # check if the user already have any product selected
-    user_gift_list_ids = [p.id for p in current_user.products]
+    user_gift_list_ids = current_user.product_ids()
     if user_gift_list_ids:
         products_on_list = [
             p.id for p in Product.query.filter(Product.id.in_(user_gift_list_ids)).all()
@@ -93,8 +95,11 @@ def product_list():
 def add_product_to_user_gift_list():
     # we only need the first (and only) key value from this form
     prod_id = request.form.keys().__next__()
-    prod = Product.query.filter_by(id=prod_id).first()
-    current_user.products.append(prod)
+    prod = Product.query.filter_by(id=prod_id).first_or_404(
+        description=f"Product with id {prod_id} not found."
+    )
+    add_prod = GiftList(user_id=current_user.id, product_id=prod_id)
+    db.session.add(add_prod)
     prod.in_stock_quantity -= 1
     db.session.commit()
     return redirect(url_for("product_list"))
@@ -105,20 +110,56 @@ def add_product_to_user_gift_list():
 def remove_product_to_user_gift_list():
     # we only need the first (and only) key value from this form
     prod_id = request.form.keys().__next__()
-    prod = Product.query.filter_by(id=prod_id).first()
-    print("current_user.products")
-    print(current_user.products)
-    current_user.products.remove(prod)
+    prod = Product.query.filter_by(id=prod_id).first_or_404(
+        description=f"Product with id {prod_id} not found."
+    )
+    remove_prod = GiftList.query.filter_by(
+        user_id=current_user.id, product_id=prod_id
+    ).first()
+    db.session.delete(remove_prod)
     prod.in_stock_quantity += 1
     db.session.commit()
     return redirect(url_for("product_list"))
 
 
-# TODO: show user's gift list
+# TODO: fix purchased items showing
 @app.route("/gift")
 @login_required
-def gift_list():
-    pass
+def user_gift_list():
+    products = current_user.products()
+    gift_list = GiftList.query.filter_by(user_id=current_user.id).all()
+
+    return render_template("gift_list.html", products=products, gift_list=gift_list)
+
+
+@app.route("/purchase_product", methods=["POST"])
+@login_required
+def purchase_product():
+    prod_id = request.form.keys().__next__()
+    purchase = GiftList.query.filter_by(
+        user_id=current_user.id, product_id=prod_id
+    ).first_or_404(f"Product {prod_id} for {current_user.username} not found.")
+    purchase.purchased = True
+    db.session.commit()
+
+    return redirect(url_for("user_gift_list"))
+
+
+# Gift List report
+# -----------------------------
+# TODO: fix report
+@app.route("/report")
+@login_required
+def gift_report():
+    user_products = current_user.products()
+    # purchased_products_ids = [
+    #     p.id for p in current_user.filter_user_products(purchased=True)
+    # ]
+
+    return render_template(
+        "report.html",
+        user_products=user_products,
+    )
 
 
 # Error handling
