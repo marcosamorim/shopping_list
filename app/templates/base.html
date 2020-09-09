@@ -13,8 +13,8 @@
 
 </body>
     <div>Wedding Shop:
-        <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('product_list') }}">Wedding List</a>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('product_list') }}">Gift List</a> |
         {% if current_user.is_anonymous %}
             <a href="{{ url_for('login') }}">Login</a>
         {% else %}

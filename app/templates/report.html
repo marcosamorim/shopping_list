@@ -6,29 +6,53 @@
 </style>
 
 {% block content %}
-    <h1>Product list</h1>
-    <table>
-        <thead>
-            <tr class="center">
-                <th scope="col">Name</th>
-                <th scope="col">Brand</th>
-                <th scope="col">Price</th>
-                <th scope="col">Purchased?</th>
-            </tr>
-        </thead>
-        {% for prod in products %}
-            <tbody>
-                <tr class="center">
-                    <td>{{ prod.name }}</td>
-                    <td>{{ prod.brand }}</td>
-                    <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
-                    <td>{% if prod.id in purchased_products_ids %}Yes √{% else %}No X{% endif %}</td>
-                </tr>
-            </tbody>
-        {% endfor %}
-    </table>
-    <br><br>
+    <h1>{{ username }} Report List</h1>
 
-    <a href="{{ url_for('product_list') }}">Back to product list</a>
+    <h2>Purchased Gifts</h2>
+    {% if not purchased_products %}
+        <h3>No gifts to be displayed. You can purchased them on <a href="{{ url_for('user_gift_list') }}">here</a>.</h3>
+    {% else %}
+        <table>
+            <thead>
+                <tr class="center">
+                    <th scope="col">Name</th>
+                    <th scope="col">Brand</th>
+                </tr>
+            </thead>
+            {% for prod in purchased_products %}
+                <tbody>
+                    <tr class="center">
+                        <td>{{ prod.name }}</td>
+                        <td>{{ prod.brand }}</td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <h2>Not Purchased Gifts</h2>
+    {% if not not_purchased_products %}
+        <h3>No gifts to be displayed.</h3>
+    {% else %}
+        <table>
+            <thead>
+                <tr class="center">
+                    <th scope="col">Name</th>
+                    <th scope="col">Brand</th>
+                </tr>
+            </thead>
+            {% for prod in not_purchased_products %}
+                <tbody>
+                    <tr class="center">
+                        <td>{{ prod.name }}</td>
+                        <td>{{ prod.brand }}</td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <br><br>
+    <a href="{{ url_for('user_gift_list') }}">Back to your gift list</a>
 
 {% endblock %}

@@ -13,6 +13,7 @@ from app.forms import LoginForm, RegistrationForm
 from app.models import Product, User, GiftList
 
 
+# TODO: Improve index page
 @app.route("/")
 @app.route("/index")
 def index():
@@ -37,6 +38,8 @@ def login():
             flash("Invalid username or password")
             return redirect(url_for("login"))
         login_user(user)
+
+        app.logger.info(f"User {user.username} logged in.")
 
         # if no next argument is specified, redirect to index
         next_page = request.args.get("next")
@@ -64,6 +67,7 @@ def register():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
+        app.logger.info(f"User {user.username} registered.")
         flash("Congratulations, you are now a registered user!")
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
@@ -102,6 +106,7 @@ def add_product_to_user_gift_list():
     db.session.add(add_prod)
     prod.in_stock_quantity -= 1
     db.session.commit()
+    app.logger.info(f"Product id {prod_id} added to '{current_user.username}' gift list.")
     return redirect(url_for("product_list"))
 
 
@@ -119,17 +124,22 @@ def remove_product_to_user_gift_list():
     db.session.delete(remove_prod)
     prod.in_stock_quantity += 1
     db.session.commit()
+    app.logger.info(f"Product id {prod_id} removed from '{current_user.username}' gift list.")
     return redirect(url_for("product_list"))
 
 
-# TODO: fix purchased items showing
 @app.route("/gift")
 @login_required
 def user_gift_list():
     products = current_user.products()
-    gift_list = GiftList.query.filter_by(user_id=current_user.id).all()
+    purchased_user_products = [
+        p.product_id
+        for p in GiftList.query.filter_by(user_id=current_user.id, purchased=True).all()
+    ]
 
-    return render_template("gift_list.html", products=products, gift_list=gift_list)
+    return render_template(
+        "gift_list.html", username=current_user.username, products=products, purchased=purchased_user_products
+    )
 
 
 @app.route("/purchase_product", methods=["POST"])
@@ -141,24 +151,30 @@ def purchase_product():
     ).first_or_404(f"Product {prod_id} for {current_user.username} not found.")
     purchase.purchased = True
     db.session.commit()
+    app.logger.info(f"Product id {prod_id} purchased on '{current_user.username}' gift list.")
 
     return redirect(url_for("user_gift_list"))
 
 
 # Gift List report
 # -----------------------------
-# TODO: fix report
 @app.route("/report")
 @login_required
 def gift_report():
     user_products = current_user.products()
-    # purchased_products_ids = [
-    #     p.id for p in current_user.filter_user_products(purchased=True)
-    # ]
+    purchase_products_ids = [
+        p.product_id
+        for p in GiftList.query.filter_by(user_id=current_user.id, purchased=True).all()
+    ]
+    purchased_products = [p for p in user_products if p.id in purchase_products_ids]
+    not_purchased_products = [p for p in user_products if p.id not in purchase_products_ids]
 
     return render_template(
         "report.html",
+        username=current_user.username,
         user_products=user_products,
+        purchased_products=purchased_products,
+        not_purchased_products=not_purchased_products,
     )
 
 
@@ -166,10 +182,12 @@ def gift_report():
 # -----------------------------
 @app.errorhandler(404)
 def not_found_error(error):
+    app.logger.error(f"Error 404: {error}")
     return render_template("404.html"), 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
+    app.logger.error(f"Error 500: {error}")
     db.session.rollback()
     return render_template("500.html"), 500

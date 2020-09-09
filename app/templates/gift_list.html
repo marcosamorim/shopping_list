@@ -6,41 +6,42 @@
 </style>
 
 {% block content %}
-    <h1>Product list</h1>
-    <table>
-        <thead>
-            <tr class="center">
-                <th scope="col">Name</th>
-                <th scope="col">Brand</th>
-                <th scope="col">Price</th>
-                <th scope="col">Actions</th>
-            </tr>
-        </thead>
-        {% for prod in products %}
-            <tbody>
+    <h1>{{ username }} Gift List</h1>
+    {% if not products %}
+        <h3>No products to be displayed. You can add them on <a href="{{ url_for('product_list') }}">here</a>.</h3>
+    {% else %}
+        <table>
+            <thead>
                 <tr class="center">
-                    <td>{{ prod.name }}</td>
-                    <td>{{ prod.brand }}</td>
-                    <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
-                    <td>
-                        {% if prod.purchased %}
-                            <a>Product already purchased</a>
-                        {% else %}
-                            <form action="{{ url_for('remove_product_to_user_gift_list') }}" method="POST">
-                                <input type="submit" name="{{ prod.id }}" value="Remove from List"/>
-                            </form>
-                            <form action="{{ url_for('purchase_product') }}" method="POST">
-                                <input type="submit" name="{{ prod.id }}" value="Purchase"/>
-                            </form>
-                        {% endif %}
-                    </td>
+                    <th scope="col">Name</th>
+                    <th scope="col">Brand</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Actions</th>
                 </tr>
-            </tbody>
-        {% endfor %}
-    </table>
-    <br><br>
+            </thead>
+            {% for prod in products %}
+                <tbody>
+                    <tr class="center">
+                        <td>{{ prod.name }}</td>
+                        <td>{{ prod.brand }}</td>
+                        <td>{% if prod.price %}£{{ "%.2f" % prod.price|float }}{% else %}N/A{% endif %}</td>
+                        <td>
+                            {% if prod.id in purchased %}
+                                <a>Product purchased</a>
+                            {% else %}
+                                <form action="{{ url_for('purchase_product') }}" method="POST">
+                                    <input type="submit" name="{{ prod.id }}" value="Purchase"/>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+        <br><br>
+    {% endif %}
 
-    <a href="{{ url_for('product_list') }}">Back to product list</a>
+    <a href="{{ url_for('product_list') }}">Back to product list</a> |
     <a href="{{ url_for('gift_report') }}">Generate Report</a>
 
 {% endblock %}
