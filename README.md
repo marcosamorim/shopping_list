@@ -11,3 +11,6 @@ An simple wedding list app made using Flask and SQLite3
 * Create unit tests
 * Create CI script  
 * Create documentation
+* Create some CSS and HTML styles for all pages
+    * Include some ordering by field 
+* Rename some models/routes (e.g products to gifts)
